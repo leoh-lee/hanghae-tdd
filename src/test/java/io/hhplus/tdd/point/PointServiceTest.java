@@ -14,7 +14,7 @@ import java.util.List;
 
 import static io.hhplus.tdd.point.TransactionType.*;
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PointServiceTest {
@@ -41,8 +41,10 @@ class PointServiceTest {
         // given
         int point = 10;
         when(userPointTable.selectById(userId)).thenReturn(new UserPoint(userId, point, System.currentTimeMillis()));
+
         // when
         UserPoint userPoint = pointService.getUserPointByUserId(userId);
+
         // then
         assertThat(userPoint.id()).isEqualTo(userId);
         assertThat(userPoint.point()).isEqualTo(point);
@@ -73,15 +75,19 @@ class PointServiceTest {
     @DisplayName("사용자 ID로 해당 사용자의 포인트를 충전한다.")
     void chargeUserPoint() {
         // given
-        long amount = 10000L;
-        when(userPointTable.insertOrUpdate(userId, amount)).thenReturn(new UserPoint(1L, 10000L, System.currentTimeMillis()));
+        long chargePoint = 10000L;
+        long chargeMillis = System.currentTimeMillis();
+
+        when(userPointTable.insertOrUpdate(userId, chargePoint)).thenReturn(new UserPoint(userId, chargePoint, chargeMillis));
 
         // when
-        UserPoint userPoint = pointService.chargeUserPoint(userId, amount);
+        UserPoint userPoint = pointService.chargeUserPoint(userId, chargePoint, chargeMillis);
 
         // then
         assertThat(userPoint.id()).isEqualTo(userId);
-        assertThat(userPoint.point()).isEqualTo(10000L);
+        assertThat(userPoint.point()).isEqualTo(chargePoint);
+        verify(pointHistoryTable, times(1)).insert(userId, chargePoint, CHARGE, chargeMillis);
+
     }
 
     @Test
@@ -92,7 +98,7 @@ class PointServiceTest {
 
         // when
         // then
-        assertThatThrownBy(()->pointService.usePoint(userId, 10000L))
+        assertThatThrownBy(()->pointService.usePoint(userId, 10000L, System.currentTimeMillis()))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("포인트가 부족하여 사용할 수 없습니다.");
     }
@@ -104,15 +110,18 @@ class PointServiceTest {
         long originalPoint = 10000L;
         long usePoint = 5000L;
         long remainPoint = originalPoint - usePoint;
+        long useMillis = System.currentTimeMillis();
+
         when(userPointTable.selectById(userId)).thenReturn(new UserPoint(userId, originalPoint, System.currentTimeMillis()));
-        when(userPointTable.insertOrUpdate(userId, remainPoint)).thenReturn(new UserPoint(userId, remainPoint, System.currentTimeMillis()));
+        when(userPointTable.insertOrUpdate(userId, remainPoint)).thenReturn(new UserPoint(userId, remainPoint, useMillis));
 
         // when
-        UserPoint userPoint = pointService.usePoint(userId, usePoint);
+        UserPoint userPoint = pointService.usePoint(userId, usePoint, useMillis);
 
         // then
         assertThat(userPoint.id()).isEqualTo(userId);
         assertThat(userPoint.point()).isEqualTo(remainPoint);
+        verify(pointHistoryTable, times(1)).insert(userId, usePoint, USE, useMillis);
     }
 
 }

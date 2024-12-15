@@ -44,7 +44,7 @@ public class PointController {
             @PathVariable long id,
             @RequestBody long amount
     ) {
-        return pointService.chargeUserPoint(id, amount);
+        return pointService.chargeUserPoint(id, amount, System.currentTimeMillis());
     }
 
     /**
@@ -55,6 +55,6 @@ public class PointController {
             @PathVariable long id,
             @RequestBody long amount
     ) {
-        return pointService.usePoint(id, amount);
+        return pointService.usePoint(id, amount, System.currentTimeMillis());
     }
 }
