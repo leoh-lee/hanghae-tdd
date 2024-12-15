@@ -2,6 +2,7 @@ package io.hhplus.tdd.point;
 
 import io.hhplus.tdd.database.PointHistoryTable;
 import io.hhplus.tdd.database.UserPointTable;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,11 +28,17 @@ class PointServiceTest {
     @InjectMocks
     private PointService pointService;
 
+    private long userId;
+
+    @BeforeEach
+    void setUp() {
+        userId = 1L;
+    }
+
     @Test
     @DisplayName("사용자 ID로 해당 사용자의 포인트를 조회한다.")
     void getUserPointByUserId() {
         // given
-        long userId = 1L;
         int point = 10;
         when(userPointTable.selectById(userId)).thenReturn(new UserPoint(userId, point, System.currentTimeMillis()));
         // when
@@ -45,7 +52,6 @@ class PointServiceTest {
     @DisplayName("사용자 ID로 해당 사용자의 포인트 충전/이용 내역을 조회한다.")
     void getPointHistoryByUserId() {
         // given
-        long userId = 1L;
         List<PointHistory> pointHistories = List.of(
                 new PointHistory(1L, userId, 10000L, CHARGE, System.currentTimeMillis()),
                 new PointHistory(2L, userId, 3000L, USE, System.currentTimeMillis())
@@ -67,7 +73,6 @@ class PointServiceTest {
     @DisplayName("사용자 ID로 해당 사용자의 포인트를 충전한다.")
     void chargeUserPoint() {
         // given
-        long userId = 1L;
         long amount = 10000L;
         when(userPointTable.insertOrUpdate(userId, amount)).thenReturn(new UserPoint(1L, 10000L, System.currentTimeMillis()));
 
@@ -83,7 +88,6 @@ class PointServiceTest {
     @DisplayName("포인트 사용 시 사용하려는 포인트보다 기존 포인트가 적으면 예외가 발생한다.")
     void usePoint_whenIsNotEnoughPoints_throwException() {
         // given
-        long userId = 1L;
         when(userPointTable.selectById(userId)).thenReturn(new UserPoint(1L, 8000L, System.currentTimeMillis()));
 
         // when
@@ -97,7 +101,6 @@ class PointServiceTest {
     @DisplayName("사용자 ID와 사용할 포인트로 포인트를 사용한다.")
     void usePoint_success() {
         // given
-        long userId = 1L;
         long originalPoint = 10000L;
         long usePoint = 5000L;
         long remainPoint = originalPoint - usePoint;
