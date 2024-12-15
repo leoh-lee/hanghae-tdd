@@ -14,8 +14,8 @@ public class PointService {
     private final UserPointTable userPointTable;
     private final PointHistoryTable pointHistoryTable;
 
-    public UserPoint getUserPointByUserId(long id) {
-        return userPointTable.selectById(id);
+    public UserPoint getUserPointByUserId(long userId) {
+        return userPointTable.selectById(userId);
     }
 
     public List<PointHistory> getPointHistoryByUserId(long userId) {
