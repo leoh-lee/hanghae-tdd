@@ -79,4 +79,37 @@ class PointServiceTest {
         assertThat(userPoint.point()).isEqualTo(10000L);
     }
 
+    @Test
+    @DisplayName("포인트 사용 시 사용하려는 포인트보다 기존 포인트가 적으면 예외가 발생한다.")
+    void usePoint_whenIsNotEnoughPoints_throwException() {
+        // given
+        long userId = 1L;
+        when(userPointTable.selectById(userId)).thenReturn(new UserPoint(1L, 8000L, System.currentTimeMillis()));
+
+        // when
+        // then
+        assertThatThrownBy(()->pointService.usePoint(userId, 10000L))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("포인트가 부족하여 사용할 수 없습니다.");
+    }
+
+    @Test
+    @DisplayName("사용자 ID와 사용할 포인트로 포인트를 사용한다.")
+    void usePoint_success() {
+        // given
+        long userId = 1L;
+        long originalPoint = 10000L;
+        long usePoint = 5000L;
+        long remainPoint = originalPoint - usePoint;
+        when(userPointTable.selectById(userId)).thenReturn(new UserPoint(userId, originalPoint, System.currentTimeMillis()));
+        when(userPointTable.insertOrUpdate(userId, remainPoint)).thenReturn(new UserPoint(userId, remainPoint, System.currentTimeMillis()));
+
+        // when
+        UserPoint userPoint = pointService.usePoint(userId, usePoint);
+
+        // then
+        assertThat(userPoint.id()).isEqualTo(userId);
+        assertThat(userPoint.point()).isEqualTo(remainPoint);
+    }
+
 }
