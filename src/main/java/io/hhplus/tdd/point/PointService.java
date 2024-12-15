@@ -23,6 +23,8 @@ public class PointService {
     }
 
     public UserPoint chargeUserPoint(long userId, long amount) {
+        pointHistoryTable.insert(userId, amount, TransactionType.CHARGE, System.currentTimeMillis());
+
         return userPointTable.insertOrUpdate(userId, amount);
     }
 
@@ -32,6 +34,8 @@ public class PointService {
         if (userPoint.isNotEnoughPoints(amount)) {
             throw new IllegalStateException("포인트가 부족하여 사용할 수 없습니다.");
         }
+
+        pointHistoryTable.insert(userId, amount, TransactionType.USE, System.currentTimeMillis());
 
         return userPointTable.insertOrUpdate(userId, userPoint.point() - amount);
     }
