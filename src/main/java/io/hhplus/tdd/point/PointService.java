@@ -21,4 +21,8 @@ public class PointService {
     public List<PointHistory> getPointHistoryByUserId(long userId) {
         return pointHistoryTable.selectAllByUserId(userId);
     }
+
+    public UserPoint chargeUserPoint(long userId, long amount) {
+        return userPointTable.insertOrUpdate(userId, amount);
+    }
 }
