@@ -63,4 +63,20 @@ class PointServiceTest {
                 );
     }
 
+    @Test
+    @DisplayName("사용자 ID로 해당 사용자의 포인트를 충전한다.")
+    void chargeUserPoint() {
+        // given
+        long userId = 1L;
+        long amount = 10000L;
+        when(userPointTable.insertOrUpdate(userId, amount)).thenReturn(new UserPoint(1L, 10000L, System.currentTimeMillis()));
+
+        // when
+        UserPoint userPoint = pointService.chargeUserPoint(userId, amount);
+
+        // then
+        assertThat(userPoint.id()).isEqualTo(userId);
+        assertThat(userPoint.point()).isEqualTo(10000L);
+    }
+
 }
