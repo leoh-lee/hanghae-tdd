@@ -90,13 +90,13 @@ class PointServiceTest {
         when(userPointTable.insertOrUpdate(USER_ID, originalPoint + chargePoint)).thenReturn(new UserPoint(USER_ID, originalPoint + chargePoint, chargeMillis));
 
         // when
-        UserPoint userPoint = pointService.chargeUserPoint(USER_ID, chargePoint, chargeMillis);
+        UserPoint userPoint = pointService.chargeUserPoint(USER_ID, chargePoint);
 
         // then
         assertThat(userPoint.id()).isEqualTo(USER_ID);
         assertThat(userPoint.point()).isEqualTo(originalPoint + chargePoint);
 
-        verify(pointHistoryTable, times(1)).insert(USER_ID, chargePoint, CHARGE, chargeMillis);
+        verify(pointHistoryTable, times(1)).insert(eq(USER_ID), eq(chargePoint), eq(CHARGE), anyLong());
     }
 
     /**
@@ -110,7 +110,7 @@ class PointServiceTest {
         long chargeMillis = System.currentTimeMillis();
 
         // when // then
-        assertThatThrownBy(() -> pointService.chargeUserPoint(USER_ID, chargePoint, chargeMillis))
+        assertThatThrownBy(() -> pointService.chargeUserPoint(USER_ID, chargePoint))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("포인트는 한 번에 최대 %d까지 충전할 수 있습니다.", MAX_AMOUNT);
     }
@@ -128,7 +128,7 @@ class PointServiceTest {
         when(userPointTable.selectById(USER_ID)).thenReturn(new UserPoint(USER_ID,999_001L, currentTimeMillis));
 
         // when // then
-        assertThatThrownBy(() -> pointService.chargeUserPoint(USER_ID, chargePoint, currentTimeMillis))
+        assertThatThrownBy(() -> pointService.chargeUserPoint(USER_ID, chargePoint))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("최대 포인트는 %d입니다.", MAX_TOTAL_POINTS);
     }
@@ -143,7 +143,7 @@ class PointServiceTest {
         long chargePoint = 999L;
         long currentTimeMillis = System.currentTimeMillis();
         // when // then
-        assertThatThrownBy(() -> pointService.chargeUserPoint(USER_ID, chargePoint, currentTimeMillis))
+        assertThatThrownBy(() -> pointService.chargeUserPoint(USER_ID, chargePoint))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("포인트는 최소 %d부터 충전할 수 있습니다.", MIN_AMOUNT);
     }
@@ -158,7 +158,7 @@ class PointServiceTest {
         // given
         long currentTimeMillis = System.currentTimeMillis();
         // when // then
-        assertThatThrownBy(() -> pointService.chargeUserPoint(USER_ID, wrongChargePoint, currentTimeMillis))
+        assertThatThrownBy(() -> pointService.chargeUserPoint(USER_ID, wrongChargePoint))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("포인트는 %d 단위로 충전할 수 있습니다.", AMOUNT_UNIT);
     }
@@ -174,7 +174,7 @@ class PointServiceTest {
 
         // when
         // then
-        assertThatThrownBy(()->pointService.usePoint(USER_ID, 10000L, System.currentTimeMillis()))
+        assertThatThrownBy(()->pointService.usePoint(USER_ID, 10000L))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("포인트가 부족하여 사용할 수 없습니다.");
     }
@@ -195,12 +195,12 @@ class PointServiceTest {
         when(userPointTable.insertOrUpdate(USER_ID, remainPoint)).thenReturn(new UserPoint(USER_ID, remainPoint, useMillis));
 
         // when
-        UserPoint userPoint = pointService.usePoint(USER_ID, usePoint, useMillis);
+        UserPoint userPoint = pointService.usePoint(USER_ID, usePoint);
 
         // then
         assertThat(userPoint.id()).isEqualTo(USER_ID);
         assertThat(userPoint.point()).isEqualTo(remainPoint);
-        verify(pointHistoryTable, times(1)).insert(USER_ID, usePoint, USE, useMillis);
+        verify(pointHistoryTable, times(1)).insert(eq(USER_ID), eq(usePoint), eq(USE), anyLong());
     }
 
 }

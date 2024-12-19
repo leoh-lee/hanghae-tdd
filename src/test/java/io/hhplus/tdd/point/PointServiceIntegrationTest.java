@@ -16,8 +16,6 @@ import static org.assertj.core.api.Assertions.*;
 @SpringBootTest
 class PointServiceIntegrationTest {
 
-    private static final long CURRENT_TIME_MILLIS = System.currentTimeMillis();
-
     @Autowired
     private PointService pointService;
 
@@ -64,7 +62,7 @@ class PointServiceIntegrationTest {
         int nThreads = 10;
         long amount = 1_000L;
 
-        executeConcurrency(nThreads, () -> pointService.chargeUserPoint(userId, amount, CURRENT_TIME_MILLIS));
+        executeConcurrency(nThreads, () -> pointService.chargeUserPoint(userId, amount));
 
         UserPoint userPoint = pointService.getUserPointByUserId(userId);
 
@@ -86,7 +84,7 @@ class PointServiceIntegrationTest {
         int threads = 30;
         long amount = 1_000L;
 
-        executeParallel(threads, userCount, userId -> pointService.chargeUserPoint(userId, amount, CURRENT_TIME_MILLIS));
+        executeParallel(threads, userCount, userId -> pointService.chargeUserPoint(userId, amount));
 
         // then
         for (int i = 0; i < userCount; i++) {
@@ -110,11 +108,11 @@ class PointServiceIntegrationTest {
         long amount = 1_000L;
 
         for (int i = 0; i < nThreads; i++) {
-            pointService.chargeUserPoint(userId, amount, CURRENT_TIME_MILLIS);
+            pointService.chargeUserPoint(userId, amount);
         }
 
         // when
-        executeConcurrency(nThreads, () -> pointService.usePoint(userId, amount, CURRENT_TIME_MILLIS));
+        executeConcurrency(nThreads, () -> pointService.usePoint(userId, amount));
 
         UserPoint userPoint = pointService.getUserPointByUserId(userId);
 
@@ -136,11 +134,11 @@ class PointServiceIntegrationTest {
         int nThreads = 30;
 
         for (int i = 0; i < userCount; i++) {
-            pointService.chargeUserPoint(i, 100_000L, CURRENT_TIME_MILLIS);
+            pointService.chargeUserPoint(i, 100_000L);
         }
 
         // when
-        executeParallel(nThreads, userCount, userId -> pointService.usePoint(userId, 10_000L, CURRENT_TIME_MILLIS));
+        executeParallel(nThreads, userCount, userId -> pointService.usePoint(userId, 10_000L));
 
         // then
         for (int i = 0; i < userCount; i++) {

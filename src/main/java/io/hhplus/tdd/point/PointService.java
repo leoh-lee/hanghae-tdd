@@ -26,7 +26,7 @@ public class PointService {
         return pointHistoryTable.selectAllByUserId(userId);
     }
 
-    public UserPoint chargeUserPoint(long userId, long amount, long chargeMillis) {
+    public UserPoint chargeUserPoint(long userId, long amount) {
         ReentrantLock lock = userLock.computeIfAbsent(userId, key -> new ReentrantLock(true));
 
         lock.lock();
@@ -38,7 +38,7 @@ public class PointService {
 
             UserPointValidator.validateTotalPoints(userPoint.point(), amount);
 
-            pointHistoryTable.insert(userId, amount, TransactionType.CHARGE, chargeMillis);
+            pointHistoryTable.insert(userId, amount, TransactionType.CHARGE, System.currentTimeMillis());
 
             return userPointTable.insertOrUpdate(userId, userPoint.point() + amount);
         } finally {
@@ -46,7 +46,7 @@ public class PointService {
         }
     }
 
-    public UserPoint usePoint(long userId, long amount, long useMillis) {
+    public UserPoint usePoint(long userId, long amount) {
         ReentrantLock lock = userLock.computeIfAbsent(userId, key -> new ReentrantLock(true));
 
         lock.lock();
@@ -56,7 +56,7 @@ public class PointService {
 
             UserPointValidator.isNotEnoughPoints(userPoint.point(), amount);
 
-            pointHistoryTable.insert(userId, amount, TransactionType.USE, useMillis);
+            pointHistoryTable.insert(userId, amount, TransactionType.USE, System.currentTimeMillis());
 
             return userPointTable.insertOrUpdate(userId, userPoint.point() - amount);
         } finally {

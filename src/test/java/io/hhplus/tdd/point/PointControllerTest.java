@@ -14,7 +14,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import java.util.List;
 
 import static io.hhplus.tdd.point.TransactionType.*;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
@@ -82,7 +81,7 @@ class PointControllerTest {
 
         long amount = 10_000L;
 
-        when(pointService.chargeUserPoint(eq(userId), eq(amount), anyLong())).thenReturn(
+        when(pointService.chargeUserPoint(eq(userId), eq(amount))).thenReturn(
                 new UserPoint(userId, amount, 100000L)
         );
 
@@ -104,7 +103,7 @@ class PointControllerTest {
         long userId = 1L;
         long amount = 10_000L;
 
-        when(pointService.usePoint(eq(userId), eq(amount), anyLong())).thenReturn(
+        when(pointService.usePoint(eq(userId), eq(amount))).thenReturn(
                 new UserPoint(userId, amount, 100000L)
         );
 
