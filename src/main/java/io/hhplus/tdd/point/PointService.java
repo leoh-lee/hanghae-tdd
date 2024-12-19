@@ -23,9 +23,15 @@ public class PointService {
     }
 
     public UserPoint chargeUserPoint(long userId, long amount, long chargeMillis) {
+        UserPointValidator.validateChargeAmount(amount);
+
+        UserPoint userPoint = userPointTable.selectById(userId);
+
+        UserPointValidator.validateTotalPoints(userPoint.point(), amount);
+
         pointHistoryTable.insert(userId, amount, TransactionType.CHARGE, chargeMillis);
 
-        return userPointTable.insertOrUpdate(userId, amount);
+        return userPointTable.insertOrUpdate(userId, userPoint.point() + amount);
     }
 
     public UserPoint usePoint(long userId, long amount, long useMillis) {
