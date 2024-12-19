@@ -53,7 +53,7 @@ class PointControllerTest {
         // given
         long userId = 1L;
 
-        when(pointService.getPointHistoryByUserId(userId)).thenReturn(
+        when(pointService.getPointHistoriesByUserId(userId)).thenReturn(
                 List.of(
                         new PointHistory(1L, userId, 10_000L, CHARGE, 100000L),
                         new PointHistory(2L, userId, 20_000L, USE, 100000L)

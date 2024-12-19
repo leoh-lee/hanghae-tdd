@@ -22,7 +22,7 @@ public class PointService {
         return userPointTable.selectById(userId);
     }
 
-    public List<PointHistory> getPointHistoryByUserId(long userId) {
+    public List<PointHistory> getPointHistoriesByUserId(long userId) {
         return pointHistoryTable.selectAllByUserId(userId);
     }
 

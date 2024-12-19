@@ -33,7 +33,7 @@ public class PointController {
     public List<PointHistory> history(
             @PathVariable long id
     ) {
-        return pointService.getPointHistoryByUserId(id);
+        return pointService.getPointHistoriesByUserId(id);
     }
 
     /**

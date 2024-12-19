@@ -65,7 +65,7 @@ class PointServiceTest {
         when(pointHistoryTable.selectAllByUserId(USER_ID)).thenReturn(pointHistories);
 
         // when
-        List<PointHistory> findPointHistories = pointService.getPointHistoryByUserId(USER_ID);
+        List<PointHistory> findPointHistories = pointService.getPointHistoriesByUserId(USER_ID);
 
         // then
         assertThat(findPointHistories).extracting("id", "userId", "amount", "type")
