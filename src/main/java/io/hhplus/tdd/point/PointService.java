@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 @Service
 @RequiredArgsConstructor
@@ -13,6 +15,8 @@ public class PointService {
 
     private final UserPointTable userPointTable;
     private final PointHistoryTable pointHistoryTable;
+
+    private final ConcurrentHashMap<Long, ReentrantLock> userLock = new ConcurrentHashMap<>();
 
     public UserPoint getUserPointByUserId(long userId) {
         return userPointTable.selectById(userId);
@@ -23,26 +27,40 @@ public class PointService {
     }
 
     public UserPoint chargeUserPoint(long userId, long amount, long chargeMillis) {
-        UserPointValidator.validateChargeAmount(amount);
+        ReentrantLock lock = userLock.computeIfAbsent(userId, key -> new ReentrantLock(true));
 
-        UserPoint userPoint = userPointTable.selectById(userId);
+        lock.lock();
 
-        UserPointValidator.validateTotalPoints(userPoint.point(), amount);
+        try {
+            UserPointValidator.validateChargeAmount(amount);
 
-        pointHistoryTable.insert(userId, amount, TransactionType.CHARGE, chargeMillis);
+            UserPoint userPoint = userPointTable.selectById(userId);
 
-        return userPointTable.insertOrUpdate(userId, userPoint.point() + amount);
+            UserPointValidator.validateTotalPoints(userPoint.point(), amount);
+
+            pointHistoryTable.insert(userId, amount, TransactionType.CHARGE, chargeMillis);
+
+            return userPointTable.insertOrUpdate(userId, userPoint.point() + amount);
+        } finally {
+            lock.unlock();
+        }
     }
 
     public UserPoint usePoint(long userId, long amount, long useMillis) {
-        UserPoint userPoint = userPointTable.selectById(userId);
+        ReentrantLock lock = userLock.computeIfAbsent(userId, key -> new ReentrantLock(true));
 
-        if (userPoint.isNotEnoughPoints(amount)) {
-            throw new IllegalStateException("포인트가 부족하여 사용할 수 없습니다.");
+        lock.lock();
+
+        try {
+            UserPoint userPoint = userPointTable.selectById(userId);
+
+            UserPointValidator.isNotEnoughPoints(userPoint.point(), amount);
+
+            pointHistoryTable.insert(userId, amount, TransactionType.USE, useMillis);
+
+            return userPointTable.insertOrUpdate(userId, userPoint.point() - amount);
+        } finally {
+            lock.unlock();
         }
-
-        pointHistoryTable.insert(userId, amount, TransactionType.USE, useMillis);
-
-        return userPointTable.insertOrUpdate(userId, userPoint.point() - amount);
     }
 }

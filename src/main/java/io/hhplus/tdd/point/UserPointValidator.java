@@ -23,4 +23,10 @@ public class UserPointValidator {
             throw new IllegalStateException("최대 포인트는 " + MAX_TOTAL_POINTS + "입니다.");
         }
     }
+
+    public static void isNotEnoughPoints(long originalPoint, long usePoint) {
+        if (originalPoint < usePoint) {
+            throw new IllegalStateException("포인트가 부족하여 사용할 수 없습니다.");
+        }
+    }
 }
